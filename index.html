@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Natural Merge Sort</title>
+        
+        <style type="text/css">
+            html, body {
+                margin: 0px;
+                font-family: Arial, Verdana;
+                font-size: 20px;
+                text-align: center;
+                background-color: #F8F8F8;
+            }
+            
+            .smooth_line {
+                color: #F8F8F8;
+                background-color: #F8F8F8;
+                width: 67%;
+                height: 0px;
+            }
+
+        </style>
+        
+        <!--<script type="text/javascript" src="algorithm.js"></script>-->
+        
+    </head>
+    <body>
+        
+        <br>
+        
+        <script type="text/javascript">
+            
+            var MARGIN_HEIGHT = 11;
+            
+            var colours = [ "red", "black" ];
+            var symbols = [ "&diams;", "&hearts;", "&spades;", "&clubs;" ];
+            var cards = [ "7", "8", "9", "10", "B", "D", "K", "A" ];
+            
+            var num_cards = symbols.length * cards.length;
+            
+            /*  */
+            
+            function return_card (index) {
+                var colour_index = parseInt(index / (num_cards / colours.length));
+                var symbol_index = parseInt(index / (num_cards / symbols.length));
+                var card_index = index % cards.length;
+                var card = "<span style='color: " + colours[colour_index] + "'>" + symbols[symbol_index] + cards[card_index] + "</span>";
+                return card;
+            }
+            function return_formatted_card (obj, move_y) {
+                var margin = (move_y) ? obj.margin : 0;
+                return "<span style='position: relative; top: " + margin + "px'>" + return_card(obj.value) + "</span>";
+            }
+            function display_list (first, move_y) {
+                var content = return_formatted_card(first, move_y);
+                var tmp = first.next;
+                var space = "&nbsp;";
+                while ( tmp ) {
+                    content += space + return_formatted_card(tmp, move_y);
+                    tmp = tmp.next;
+                }
+                return content;
+            }
+            
+            function two_col_table () {
+                var table = document.createElement("table");
+                table.align = "center";
+                table.border = "0";
+                table.cellSpacing = "4";
+                
+                var tr = document.createElement("tr");
+                table.appendChild(tr);
+                
+                var td1 = document.createElement("td");
+                var td2 = document.createElement("td");
+                td1.align = "left";
+                td1.vAlign = "middle";
+                td2.vAlign = "middle";
+                tr.appendChild(td1);
+                tr.appendChild(td2);
+                
+                return [ table, td1, td2 ];
+            }
+            
+            var layer_counter = 0;
+            function new_layer () {
+                layer_counter++;
+                var colour = 250 - (2 * layer_counter);
+                var hex_colour = colour.toString(16);
+                var tmp = document.createElement("div");
+                tmp.style.backgroundColor = "#" + hex_colour + hex_colour + hex_colour;
+                layer = tmp;
+                document.body.appendChild(layer);
+            }
+            
+            /*  */
+            
+            function create_indices (amount) {
+                
+                var source = [];
+                var target = [];
+                var i, random_index;
+
+                for ( i = 0; i < amount; i++ )
+                    source.push(i);
+
+                while ( source.length ) {
+                    random_index = Math.floor(Math.random() * source.length);
+                    target.push(source[random_index]);
+                    source.splice(random_index, 1);
+                }
+
+                return target;
+            }
+            function create_container (the_value) {
+                var tmp = {};
+                tmp.value = the_value;
+                tmp.margin = 0;
+                tmp.next = null;
+                return tmp;
+            }
+            function create_list (start, values) {
+                var tmp = start;
+                var next;
+                for ( var i = 1; i < values.length; i++ ) {
+                    next = create_container(values[i]);
+                    tmp.next = next;
+                    tmp = next;
+                }
+                return tmp;
+            }
+            
+            function merge (first, second) {
+                var to_return, alternative, tmp_alternative;
+                
+                if ( first.value <= second.value ) {
+                    to_return = first;
+                    alternative = second;
+                }
+                else {
+                    to_return = second;
+                    alternative = first;
+                }
+                
+                var tmp = to_return;
+                
+                while ( alternative ) {
+                    while ( tmp.next && tmp.next.value <= alternative.value )
+                        tmp = tmp.next;
+                    tmp_alternative = tmp.next;
+                    tmp.next = alternative;
+                    tmp = alternative;
+                    alternative = tmp_alternative;
+                }
+                
+                return to_return;
+            }
+            function natural_merge_sort (first, last) {
+                
+                var first_end = first;
+                if ( remembered_first == first_end )
+                    new_layer();
+                first_end.margin = 0 - MARGIN_HEIGHT;
+                while ( first_end.next && first_end.value <= first_end.next.value ) {
+                    first_end = first_end.next;
+                    if ( remembered_first == first_end )
+                        new_layer();
+                    first_end.margin = 0 - MARGIN_HEIGHT;
+                }
+                
+                if ( !first_end.next )
+                    return first;
+                
+                layer.innerHTML += "<hr class='smooth_line'>";
+                
+                var second_start = first_end.next;
+                var second_end = second_start;
+                if ( remembered_first == second_end )
+                    new_layer();
+                second_end.margin = MARGIN_HEIGHT;
+                
+                first_end.next = null;
+                
+                while ( second_end.next && second_end.value <= second_end.next.value ) {
+                    second_end = second_end.next;
+                    if ( remembered_first == second_end )
+                        new_layer();
+                    second_end.margin = MARGIN_HEIGHT;
+                }
+                
+                var remaining = second_end.next;
+                
+                second_end.next = null;
+                
+                var space = "&nbsp;&nbsp; &sdot; &nbsp;&nbsp;";
+                var first_list = display_list(first, 0);
+                var second_list = display_list(second_start, 0);
+                var remaining_list = (remaining) ? display_list(remaining, 0) : "";
+                var content = first_list + space + second_list + space + remaining_list + "<br>";
+                layer.innerHTML += content;
+
+                var table = two_col_table();
+                table[1].innerHTML = first_list + "<br>" + second_list;
+                table[2].innerHTML = space + remaining_list;
+                layer.appendChild(table[0]);
+                
+                var sorted = merge(first, second_start);
+                table = two_col_table();
+                table[0].style.marginTop = MARGIN_HEIGHT + "px";
+                table[0].style.marginBottom = parseInt(1.5 * MARGIN_HEIGHT) + "px";
+                table[1].innerHTML = display_list(sorted, 1);
+                table[2].innerHTML = space + remaining_list;
+                layer.appendChild(table[0]);
+                
+                var sorted_list = display_list(sorted, 0);
+                content = sorted_list + space + remaining_list + "<br>";
+                layer.innerHTML += content;
+                
+                if ( !remaining )
+                    return sorted;
+                
+                content = "<div style='margin-top: " + MARGIN_HEIGHT + "px'>" + remaining_list + space + sorted_list + "</div>";
+                layer.innerHTML += content;
+                
+                last.next = sorted;
+                while ( last.next )
+                    last = last.next;
+                
+                return natural_merge_sort(remaining, last);
+            }
+            
+            var values = create_indices(num_cards);
+            var first = create_container(values[0]);
+            var last = create_list(first, values);
+            values = [];
+            
+            var layer = document.body;
+            layer.innerHTML += display_list(first, 0);
+            
+            var remembered_first = first;
+            
+            var sorted = natural_merge_sort(first, last);
+            layer = document.body;
+            layer.innerHTML += "<hr class='smooth_line'>";
+            layer.innerHTML += display_list(sorted, 0);
+            
+        </script>
+        
+    </body>
+</html>
