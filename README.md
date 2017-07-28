@@ -1,8 +1,8 @@
 # NaturalMergeSort
 
-index.html visualises how Natural Merge Sort works in general
+**index.html** visualises how *Natural Merge Sort* works in general
 
-algorithm.js is a possible Javascript implementation
+**algorithm.js** is a possible Javascript implementation
 
 ## Basic idea
 Initially sorted elements do not need to be sorted again.
